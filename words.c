@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-constexpr char EASY_WORDS[98][3] = {
+const char EASY_WORDS[98][4] = {
     "bat", "dog", "toy", "cat", "rat", "law", "mud", "boy", "the", "she",
     "red", "pop", "lie", "bay", "hay", "can", "sad", "mad", "cap", "rap",
     "met", "fad", "hop", "top", "tap", "lap", "bag", "ham", "ray",
@@ -13,9 +13,9 @@ constexpr char EASY_WORDS[98][3] = {
     "run", "ran", "ton", "put", "hut", "but", "cut", "pit", "vat"
 };
 
-constexpr uint8_t LEN_EASY_WORDS = sizeof(EASY_WORDS) / sizeof(EASY_WORDS[0]);
+const uint8_t LEN_EASY_WORDS = sizeof(EASY_WORDS) / sizeof(EASY_WORDS[0]);
 
-constexpr char MEDIUM_WORDS[75][6] = {
+const char MEDIUM_WORDS[75][7] = {
     "lemon", "cheese", "happy", "angry", "tomato", "carve", "tattoo",
     "water", "walks", "visit", "liver", "flight", "height", "skirts",
     "house", "train", "spoon", "tiger", "zebra", "doctor", "teach",
@@ -29,9 +29,9 @@ constexpr char MEDIUM_WORDS[75][6] = {
     "winter", "cover", "paper", "pencil", "hello"
 };
 
-constexpr uint8_t LEN_MEDIUM_WORDS = sizeof(MEDIUM_WORDS) / sizeof(MEDIUM_WORDS[0]);
+const uint8_t LEN_MEDIUM_WORDS = sizeof(MEDIUM_WORDS) / sizeof(MEDIUM_WORDS[0]);
 
-constexpr char HARD_WORDS[122][15] = {
+const char HARD_WORDS[122][16] = {
     "congratulations", "absolutely", "photosynthesis", "monstrosity",
     "university", "cheeseburger", "accommodate", "suburban", "pizazz",
     "assuming", "stewardess", "xylophone", "overzealous", "withdrawal",
@@ -63,4 +63,4 @@ constexpr char HARD_WORDS[122][15] = {
     "tomorrow", "zucchini"
 };
 
-constexpr uint8_t LEN_HARD_WORDS = sizeof(HARD_WORDS) / sizeof(HARD_WORDS[0]);
+const uint8_t LEN_HARD_WORDS = sizeof(HARD_WORDS) / sizeof(HARD_WORDS[0]);

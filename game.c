@@ -49,19 +49,19 @@ uint16_t getSafeWordLength(const uint8_t length, const Difficulty difficulty) {
     uint16_t possibleChars = 0;
 
     if (difficulty == EASY) {
-        constexpr uint8_t easySize = 3;
+        constexpr uint8_t easySize = 4; // 3-letter words + null byte
         possibleChars = (easySize+2) * length; // +2 because spaces around words
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (easySize + 2));
         }
     } else if (difficulty == MEDIUM) {
-        constexpr uint8_t mediumSize = 6;
+        constexpr uint8_t mediumSize = 7;
         possibleChars = (mediumSize+2) * length;
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (mediumSize + 2));
         }
     } else if (difficulty == HARD) {
-        constexpr uint8_t hardSize = 15;
+        constexpr uint8_t hardSize = 16;
         possibleChars = (hardSize+2) * length;
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (hardSize + 2));
@@ -93,7 +93,12 @@ void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, cons
                 return;
         }
 
+        // printf("WORD: '%s'\n", rWord);
+
         strncat(buffer, rWord, bufferSize - strlen(buffer) - 1);
+        if (i + 1 < length) {
+            strncat(buffer, " ", bufferSize - strlen(buffer) - 1);
+        }
     }
 }
 
@@ -102,17 +107,16 @@ RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, con
 
     char prompt[768];
     getRandomPrompt(prompt, sizeof(prompt), promptLength, difficulty);
+    // printf("DEBUG: '%s'\n", prompt);
 
-    strcpy(roundData.prompt, prompt);
+    strcpy((&roundData)->prompt, prompt);
 
     const time_t timeLimit = (time_t) getRandomIntInclusive(5, 8) + (promptLength * difficulty);
     roundData.timeLimit = timeLimit;
 
     roundData.roundNum = roundNum;
 
-    char inputBuffer[778];
-
-    strcpy(roundData.input, inputBuffer);
+    memset(roundData.input, 0, sizeof(roundData.input));
 
     roundData.timeTaken = (time_t) 0;
     roundData.score = 0;
@@ -132,7 +136,9 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
     pGameState->difficulty = difficulty;
 
     for (uint16_t r = 0; r < rounds; r++) {
-        pGameState->roundData[r] = genRoundData(r, difficulty, ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4));
+        const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
+        // printf("promptLength: '%hhu'\n", promptLength);
+        pGameState->roundData[r] = genRoundData(r + 1, difficulty, promptLength);
         runRound(&(pGameState->roundData[r]));
         pGameState->roundNum++;
     }

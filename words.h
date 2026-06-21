@@ -1,11 +1,15 @@
 #ifndef WORDS_H
 #define WORDS_H
 
-char EASY_WORDS[98][3];
-uint8_t LEN_EASY_WORDS;
-char MEDIUM_WORDS[75][6];
-uint8_t LEN_MEDIUM_WORDS;
-char HARD_WORDS[122][15];
-uint8_t LEN_HARD_WORDS;
+#include <stdint.h>
 
-#endif //WORDS_H
+extern const char EASY_WORDS[98][4];
+extern const uint8_t LEN_EASY_WORDS;
+
+extern const char MEDIUM_WORDS[75][7];
+extern const uint8_t LEN_MEDIUM_WORDS;
+
+extern const char HARD_WORDS[122][16];
+extern const uint8_t LEN_HARD_WORDS;
+
+#endif
