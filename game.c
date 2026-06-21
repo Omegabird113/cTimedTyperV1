@@ -13,17 +13,17 @@ typedef enum Difficulty {
 } Difficulty;
 
 typedef struct RoundData {
-    uint16_t roundNum;
+    uint8_t roundNum;
     time_t timeLimit;
-    char* prompt;
+    char prompt[768];
     time_t timeTaken;
-    char* input;
+    char input[778];
     uint32_t score;
 } RoundData;
 
 typedef struct GameState {
-    uint16_t roundNum;
-    RoundData* roundData;
+    uint8_t roundNum;
+    RoundData roundData[255];
     uint64_t totalScore;
     float scoreMultiplier;
     Difficulty difficulty;
@@ -41,12 +41,39 @@ RoundData* runRound(RoundData* pRData) {
 }
 
 int getRandomIntInclusive(const int min, const int max) {
-    srand(time(nullptr));
     return (rand() % (max - min + 1)) + min;
 }
 
-void getRandomPrompt(char *buffer, size_t bufferSize, uint8_t length, Difficulty difficulty)
-{
+uint16_t getSafeWordLength(const uint8_t length, const Difficulty difficulty) {
+    constexpr uint16_t maxChars = 768;
+    uint16_t possibleChars = 0;
+
+    if (difficulty == EASY) {
+        constexpr uint8_t easySize = 3;
+        possibleChars = (easySize+2) * length; // +2 because spaces around words
+        if (possibleChars > maxChars) {
+            return floor((double) maxChars / (easySize + 2));
+        }
+    } else if (difficulty == MEDIUM) {
+        constexpr uint8_t mediumSize = 6;
+        possibleChars = (mediumSize+2) * length;
+        if (possibleChars > maxChars) {
+            return floor((double) maxChars / (mediumSize + 2));
+        }
+    } else if (difficulty == HARD) {
+        constexpr uint8_t hardSize = 15;
+        possibleChars = (hardSize+2) * length;
+        if (possibleChars > maxChars) {
+            return floor((double) maxChars / (hardSize + 2));
+        }
+    }
+
+    return length;
+}
+
+void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, const Difficulty difficulty) {
+    length = getSafeWordLength(length, difficulty);
+
     buffer[0] = '\0';
 
     for (uint8_t i = 0; i < length; i++) {
@@ -70,49 +97,46 @@ void getRandomPrompt(char *buffer, size_t bufferSize, uint8_t length, Difficulty
     }
 }
 
-RoundData genRoundData(uint16_t roundNum, Difficulty difficulty, uint8_t promptLength) {
+RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, const uint8_t promptLength) {
     RoundData roundData = {};
 
-    char prompt[sizeof(HARD_WORDS) * promptLength];
+    char prompt[768];
     getRandomPrompt(prompt, sizeof(prompt), promptLength, difficulty);
 
-    roundData.prompt = prompt;
+    strcpy(roundData.prompt, prompt);
 
-    time_t timeLimit = (time_t) getRandomIntInclusive(5, 8) + (promptLength * difficulty);
-
+    const time_t timeLimit = (time_t) getRandomIntInclusive(5, 8) + (promptLength * difficulty);
     roundData.timeLimit = timeLimit;
 
     roundData.roundNum = roundNum;
 
-    char inputBuffer[sizeof(prompt)];
+    char inputBuffer[778];
 
-    roundData.input = inputBuffer;
+    strcpy(roundData.input, inputBuffer);
+
     roundData.timeTaken = (time_t) 0;
     roundData.score = 0;
+    return roundData;
 }
 
 double logBase(const double b, const double y) {
-    return log(b) / log(y);
+    return log(y) / log(b);
 }
 
 void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
     GameState* pGameState = (GameState*)malloc(sizeof(GameState));
-    RoundData* pRoundData = (RoundData*)malloc(sizeof(RoundData) * rounds);
 
     pGameState->roundNum = 1;
-    pGameState->roundData = pRoundData;
     pGameState->totalScore = 0;
     pGameState->scoreMultiplier = scoreMultiplier;
     pGameState->difficulty = difficulty;
 
-    for (uint16_t r = 1; r <= rounds; r++) {
-        pRoundData[r] = genRoundData(r, difficulty, ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4));
-        runRound(&pRoundData[r]);
-        pRoundData->roundNum++;
+    for (uint16_t r = 0; r < rounds; r++) {
+        pGameState->roundData[r] = genRoundData(r, difficulty, ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4));
+        runRound(&(pGameState->roundData[r]));
+        pGameState->roundNum++;
     }
 
     free(pGameState);
     pGameState = nullptr;
-    free(pRoundData);
-    pRoundData = nullptr;
 }
