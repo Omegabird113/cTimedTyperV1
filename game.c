@@ -35,7 +35,8 @@ uint16_t getWordCount(const char *s) {
     return count;
 }
 
-uint16_t getRoundScore(const time_t limit, const time_t taken, const char* prompt, const char* input, const Difficulty difficulty) {
+uint16_t getRoundScore(const time_t limit, const time_t taken, const char *prompt, const char *input,
+                       const Difficulty difficulty) {
     const double timeRelative = (double) taken / (double) limit;
     const double accuracy = getAccuracy(prompt, input);
 
@@ -46,16 +47,18 @@ uint16_t getRoundScore(const time_t limit, const time_t taken, const char* promp
     return ceil(finalScore);
 }
 
-RoundData* runRound(RoundData* pRData) {
+RoundData *runRound(RoundData *pRData) {
     const time_t start = time(nullptr);
-    printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit, pRData->prompt);
+    printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit,
+           pRData->prompt);
     if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
         exit(1);
     }
     pRData->input[strcspn(pRData->input, "\n")] = '\0';
     const time_t end = time(nullptr);
     pRData->timeTaken = end - start;
-    pRData->roundScore = getRoundScore(pRData->timeLimit, pRData->timeTaken, pRData->prompt, pRData->input, pRData->difficulty);
+    pRData->roundScore = getRoundScore(pRData->timeLimit, pRData->timeTaken, pRData->prompt, pRData->input,
+                                       pRData->difficulty);
     return pRData;
 }
 
@@ -65,19 +68,19 @@ uint16_t getSafeWordLength(const uint8_t length, const Difficulty difficulty) {
 
     if (difficulty == EASY) {
         constexpr uint8_t easySize = 4; // 3-letter words + null byte
-        possibleChars = (easySize+2) * length; // +2 because spaces around words
+        possibleChars = (easySize + 2) * length; // +2 because spaces around words
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (easySize + 2));
         }
     } else if (difficulty == MEDIUM) {
         constexpr uint8_t mediumSize = 7;
-        possibleChars = (mediumSize+2) * length;
+        possibleChars = (mediumSize + 2) * length;
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (mediumSize + 2));
         }
     } else if (difficulty == HARD) {
         constexpr uint8_t hardSize = 16;
-        possibleChars = (hardSize+2) * length;
+        possibleChars = (hardSize + 2) * length;
         if (possibleChars > maxChars) {
             return floor((double) maxChars / (hardSize + 2));
         }
@@ -140,7 +143,7 @@ RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, con
 }
 
 void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
-    auto pGameState = (GameState*)malloc(sizeof(GameState));
+    auto pGameState = (GameState *) malloc(sizeof(GameState));
     pGameState->roundData = malloc(rounds * sizeof(RoundData));
 
     if (!pGameState->roundData) {

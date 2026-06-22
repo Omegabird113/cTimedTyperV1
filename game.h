@@ -22,13 +22,13 @@ typedef struct RoundData {
 
 typedef struct GameState {
     uint16_t roundNum;
-    RoundData* roundData;
+    RoundData *roundData;
     uint64_t totalScore;
     float scoreMultiplier;
     Difficulty currentDifficulty;
 } GameState;
 
-RoundData* runRound(RoundData* pRData);
+RoundData *runRound(RoundData *pRData);
 
 void play(Difficulty difficulty, uint16_t rounds, float scoreMultiplier);
 
