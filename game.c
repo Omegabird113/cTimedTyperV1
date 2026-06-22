@@ -51,7 +51,7 @@ RoundData *runRound(RoundData *pRData) {
     const time_t start = time(nullptr);
     printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit,
            pRData->prompt);
-    if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
+    if (fgets(pRData->input, pRData->buffSize, stdin) == NULL) {
         return pRData;
     }
     pRData->input[strcspn(pRData->input, "\n")] = '\0';
@@ -62,35 +62,32 @@ RoundData *runRound(RoundData *pRData) {
     return pRData;
 }
 
-uint16_t getSafeWordLength(const uint8_t length, const Difficulty difficulty) {
-    constexpr uint16_t maxChars = 768;
+uint16_t getSafeWordLength(const uint16_t buffSize, const uint8_t length, const Difficulty difficulty) {
     uint16_t possibleChars = 0;
-
     if (difficulty == EASY) {
         constexpr uint8_t easySize = 4; // 3-letter words + null byte
         possibleChars = (easySize + 2) * length; // +2 because spaces around words
-        if (possibleChars > maxChars) {
-            return floor((double) maxChars / (easySize + 2));
+        if (possibleChars > buffSize) {
+            return floor((double) buffSize / (easySize + 2));
         }
     } else if (difficulty == MEDIUM) {
         constexpr uint8_t mediumSize = 7;
         possibleChars = (mediumSize + 2) * length;
-        if (possibleChars > maxChars) {
-            return floor((double) maxChars / (mediumSize + 2));
+        if (possibleChars > buffSize) {
+            return floor((double) buffSize / (mediumSize + 2));
         }
     } else if (difficulty == HARD) {
         constexpr uint8_t hardSize = 16;
         possibleChars = (hardSize + 2) * length;
-        if (possibleChars > maxChars) {
-            return floor((double) maxChars / (hardSize + 2));
+        if (possibleChars > buffSize) {
+            return floor((double) buffSize / (hardSize + 2));
         }
     }
-
     return length;
 }
 
-void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, const Difficulty difficulty) {
-    length = getSafeWordLength(length, difficulty);
+void getRandomPrompt(char *buffer, const uint16_t buffSize, uint8_t length, const Difficulty difficulty) {
+    length = getSafeWordLength(buffSize, length, difficulty);
 
     buffer[0] = '\0';
 
@@ -113,30 +110,30 @@ void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, cons
 
         // printf("WORD: '%s'\n", rWord);
 
-        strncat(buffer, rWord, bufferSize - strlen(buffer) - 1);
+        strncat(buffer, rWord, buffSize - strlen(buffer) - 1);
         if (i + 1 < length) {
-            strncat(buffer, " ", bufferSize - strlen(buffer) - 1);
+            strncat(buffer, " ", buffSize - strlen(buffer) - 1);
         }
     }
 }
 
-RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, const uint8_t promptLength) {
+RoundData genRoundData(uint16_t buffSize, char* promptBuffer, char* inputBuffer, const uint16_t roundNum, const Difficulty difficulty, const uint8_t promptLength) {
     RoundData roundData = {};
 
     roundData.difficulty = difficulty;
 
-    char prompt[768];
-    getRandomPrompt(prompt, sizeof(prompt), promptLength, difficulty);
+    getRandomPrompt(promptBuffer, buffSize, promptLength, difficulty);
     // printf("DEBUG: '%s'\n", prompt);
 
-    strcpy((&roundData)->prompt, prompt);
+    roundData.prompt = promptBuffer;
 
     const time_t timeLimit = (time_t) getRandomIntInclusive(5, 8) + (promptLength * difficulty);
     roundData.timeLimit = timeLimit;
 
     roundData.roundNum = roundNum;
 
-    memset(roundData.input, 0, sizeof(roundData.input));
+    roundData.input = inputBuffer;
+
     roundData.timeTaken = (time_t) 0;
     roundData.roundScore = 0;
     return roundData;
@@ -191,12 +188,20 @@ void play(const uint64_t startScore, const uint16_t rounds, const float scoreMul
         const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
         pGameState->currentDifficulty = genDifficulty(pGameState->totalScore);
         // printf("promptLength: '%hhu'\n", promptLength);
-        pGameState->roundData[r] = genRoundData(r + 1, pGameState->currentDifficulty, promptLength);
+        constexpr uint16_t buffSize = 768;
+        auto *promptBuffer = (char*) malloc(buffSize);
+        auto *inputBuffer = (char*) malloc(buffSize);
+        pGameState->roundData[r] = genRoundData(buffSize, promptBuffer, inputBuffer, r + 1, pGameState->currentDifficulty, promptLength);
+        pGameState->roundData[r].buffSize = buffSize;
         runRound(&(pGameState->roundData[r]));
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
         printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
         askForNextRound(false);
         pGameState->roundNum++;
+        free(promptBuffer);
+        free(inputBuffer);
+        pGameState->roundData[r].prompt = nullptr;
+        pGameState->roundData[r].input = nullptr;
     }
 
     free(pGameState->roundData);

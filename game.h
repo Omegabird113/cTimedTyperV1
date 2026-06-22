@@ -14,9 +14,10 @@ typedef struct RoundData {
     uint8_t roundNum;
     Difficulty difficulty;
     time_t timeLimit;
-    char prompt[768];
+    uint16_t buffSize;
+    char* prompt;
+    char* input;
     time_t timeTaken;
-    char input[778];
     uint16_t roundScore;
 } RoundData;
 
