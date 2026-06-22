@@ -11,6 +11,10 @@
 #include "ldistance.h"
 
 int getRandomIntInclusive(const int min, const int max) {
+    if (min > max) {
+        printf("getRandomIntInclusive ERROR: max must be greater than min\n");
+        exit(1);
+    }
     return (rand() % (max - min + 1)) + min;
 }
 
@@ -41,7 +45,7 @@ uint16_t getRoundScore(const time_t limit, const time_t taken, const char *promp
     const double accuracy = getAccuracy(prompt, input);
 
     const double baseScore = difficulty * accuracy * pow(getWordCount(prompt), 1.5) * (1 / timeRelative);
-    const double randomFactor = getRandomIntInclusive(12500, 7500) / 10000.0;
+    const double randomFactor = getRandomIntInclusive(7500, 12500) / 10000.0;
     const double finalScore = baseScore * randomFactor;
 
     return ceil(finalScore);
