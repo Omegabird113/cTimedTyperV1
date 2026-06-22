@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  push:
+    tags:
+     - 'v*'
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Install Latest CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: latest
+
+    - name: Install Ninja
+      run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+    - name: Configure
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Package
+      run: |
+        tar -czf cTimedTyperV1-linux-x64.tar.gz \
+          -C build cTimedTyperV1
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-x64
+        path: cTimedTyperV1-linux-x64.tar.gz
+
+  build_macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Install Latest CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: latest
+
+    - name: Install Ninja
+      run: brew install ninja
+
+    - name: Configure Universal Binary
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Verify Universal Binary
+      run: lipo -info build/cTimedTyperV1
+
+    - name: Package
+      run: |
+        tar -czf cTimedTyperV1-macos-universal.tar.gz \
+          -C build cTimedTyperV1
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-universal
+        path: cTimedTyperV1-macos-universal.tar.gz
+
+  build_windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Install Latest CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: latest
+
+    - name: Install Ninja
+      run: choco install ninja
+
+    - name: Configure
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Package
+      shell: pwsh
+      run: |
+        Compress-Archive `
+          -Path build\cTimedTyperV1.exe `
+          -DestinationPath cTimedTyperV1-windows-x64.zip
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-x64
+        path: cTimedTyperV1-windows-x64.zip
+
+  release:
+    needs:
+    - build_linux
+    - build_macos
+    - build_windows
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          linux-x64/cTimedTyperV1-linux-x64.tar.gz
+          macos-universal/cTimedTyperV1-macos-universal.tar.gz
+          windows-x64/cTimedTyperV1-windows-x64.zip
