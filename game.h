@@ -5,17 +5,17 @@
 #include <time.h>
 
 typedef enum Difficulty {
-    EASY,
-    MEDIUM,
-    HARD,
+    EASY = 1,
+    MEDIUM = 2,
+    HARD = 4,
 } Difficulty;
 
 typedef struct RoundData {
-    uint16_t roundNum;
+    uint8_t roundNum;
     time_t timeLimit;
-    char* prompt;
+    char prompt[768];
     time_t timeTaken;
-    char* input;
+    char input[778];
     uint32_t score;
 } RoundData;
 
