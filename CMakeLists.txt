@@ -7,4 +7,6 @@ add_executable(cTimedTyperV1 main.c
         game.c
         game.h
         words.c
-        words.h)
+        words.h
+        ldistance.c
+        ldistance.h)
