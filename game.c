@@ -6,13 +6,13 @@
 #include "words.h"
 #include "game.h"
 
-
 RoundData* runRound(RoundData* pRData) {
     const time_t start = time(nullptr);
     printf("Round #%d:\nEnter the following:\n%s\n", pRData->roundNum, pRData->prompt);
-    if (scanf("%s", pRData->input) != 1) {
+    if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
         exit(1);
     }
+    pRData->input[strcspn(pRData->input, "\n")] = '\0';
     const time_t end = time(nullptr);
     pRData->timeTaken = end - start;
     return pRData;
@@ -107,6 +107,12 @@ double logBase(const double b, const double y) {
 
 void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
     GameState* pGameState = (GameState*)malloc(sizeof(GameState));
+    pGameState->roundData = malloc(rounds * sizeof(RoundData));
+
+    if (!pGameState->roundData) {
+        free(pGameState);
+        return;
+    }
 
     pGameState->roundNum = 1;
     pGameState->totalScore = 0;
@@ -121,6 +127,7 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
         pGameState->roundNum++;
     }
 
+    free(pGameState->roundData);
     free(pGameState);
     pGameState = nullptr;
 }
