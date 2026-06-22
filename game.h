@@ -29,6 +29,6 @@ typedef struct GameState {
 
 RoundData* runRound(RoundData* pRData);
 
-void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier);
+void play(Difficulty difficulty, uint16_t rounds, float scoreMultiplier);
 
 #endif

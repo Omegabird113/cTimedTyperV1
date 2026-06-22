@@ -3,31 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tgmath.h>
-#include <time.h>
 #include "words.h"
+#include "game.h"
 
-typedef enum Difficulty {
-    EASY = 1,
-    MEDIUM = 2,
-    HARD = 4,
-} Difficulty;
-
-typedef struct RoundData {
-    uint8_t roundNum;
-    time_t timeLimit;
-    char prompt[768];
-    time_t timeTaken;
-    char input[778];
-    uint32_t score;
-} RoundData;
-
-typedef struct GameState {
-    uint8_t roundNum;
-    RoundData roundData[255];
-    uint64_t totalScore;
-    float scoreMultiplier;
-    Difficulty difficulty;
-} GameState;
 
 RoundData* runRound(RoundData* pRData) {
     const time_t start = time(nullptr);

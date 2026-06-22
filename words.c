@@ -1,6 +1,7 @@
 #include <stdint.h>
+#include "words.h"
 
-const char EASY_WORDS[98][4] = {
+const char EASY_WORDS[][4] = {
     "bat\0", "dog\0", "toy\0", "cat\0", "rat\0", "law\0", "mud\0", "boy\0", "the\0", "she\0",
     "red\0", "pop\0", "lie\0", "bay\0", "hay\0", "can\0", "sad\0", "mad\0", "cap\0", "rap\0",
     "met\0", "fad\0", "hop\0", "top\0", "tap\0", "lap\0", "bag\0", "ham\0", "ray\0",
@@ -15,7 +16,7 @@ const char EASY_WORDS[98][4] = {
 
 const uint8_t LEN_EASY_WORDS = sizeof(EASY_WORDS) / sizeof(EASY_WORDS[0]);
 
-const char MEDIUM_WORDS[75][7] = {
+const char MEDIUM_WORDS[][7] = {
     "lemon\0", "cheese\0", "happy\0", "angry\0", "tomato\0", "carve\0", "tattoo\0",
     "water\0", "walks\0", "visit\0", "liver\0", "flight\0", "height\0", "skirts\0",
     "house\0", "train\0", "spoon\0", "tiger\0", "zebra\0", "doctor\0", "teach\0",
@@ -31,7 +32,7 @@ const char MEDIUM_WORDS[75][7] = {
 
 const uint8_t LEN_MEDIUM_WORDS = sizeof(MEDIUM_WORDS) / sizeof(MEDIUM_WORDS[0]);
 
-const char HARD_WORDS[122][16] = {
+const char HARD_WORDS[][16] = {
     "congratulations\0", "absolutely\0", "photosynthesis\0", "monstrosity\0",
     "university\0", "cheeseburger\0", "accommodate\0", "suburban\0", "pizazz\0",
     "assuming\0", "stewardess\0", "xylophone\0", "overzealous\0", "withdrawal\0",
