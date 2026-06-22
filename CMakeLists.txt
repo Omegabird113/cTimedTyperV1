@@ -10,3 +10,5 @@ add_executable(cTimedTyperV1 main.c
         words.h
         ldistance.c
         ldistance.h)
+
+target_link_libraries(cTimedTyperV1 PRIVATE m)

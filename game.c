@@ -5,6 +5,9 @@
 #include <tgmath.h>
 #include "words.h"
 #include "game.h"
+
+#include <inttypes.h>
+
 #include "ldistance.h"
 
 int getRandomIntInclusive(const int min, const int max) {
@@ -32,8 +35,6 @@ uint16_t getWordCount(const char *s) {
     return count;
 }
 
-
-
 uint16_t getRoundScore(const time_t limit, const time_t taken, const char* prompt, const char* input, const Difficulty difficulty) {
     const double timeRelative = (double) taken / (double) limit;
     const double accuracy = getAccuracy(prompt, input);
@@ -47,7 +48,7 @@ uint16_t getRoundScore(const time_t limit, const time_t taken, const char* promp
 
 RoundData* runRound(RoundData* pRData) {
     const time_t start = time(nullptr);
-    printf("Round #%d:\nEnter the following:\n%s\n", pRData->roundNum, pRData->prompt);
+    printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit, pRData->prompt);
     if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
         exit(1);
     }
@@ -91,7 +92,7 @@ void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, cons
     buffer[0] = '\0';
 
     for (uint8_t i = 0; i < length; i++) {
-        char *rWord;
+        const char *rWord;
 
         switch (difficulty) {
             case EASY:
@@ -158,7 +159,7 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
         pGameState->roundData[r] = genRoundData(r + 1, difficulty, promptLength);
         runRound(&(pGameState->roundData[r]));
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
-        printf("You're total score is now %llu!\n", pGameState->totalScore);
+        printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
         pGameState->roundNum++;
     }
 
