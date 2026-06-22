@@ -10,6 +10,11 @@
 
 #include "ldistance.h"
 
+void clearInputBuffer(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
 int getRandomIntInclusive(const int min, const int max) {
     return (rand() % (max - min + 1)) + min;
 }
@@ -52,13 +57,15 @@ RoundData *runRound(RoundData *pRData) {
     printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit,
            pRData->prompt);
     if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
-        exit(1);
+        clearInputBuffer();
+        return pRData;
     }
     pRData->input[strcspn(pRData->input, "\n")] = '\0';
     const time_t end = time(nullptr);
     pRData->timeTaken = end - start;
     pRData->roundScore = getRoundScore(pRData->timeLimit, pRData->timeTaken, pRData->prompt, pRData->input,
                                        pRData->difficulty);
+    clearInputBuffer();
     return pRData;
 }
 
@@ -142,6 +149,24 @@ RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, con
     return roundData;
 }
 
+void askForNextRound(void) {
+    while (true) {
+        printf("Do you want to play another round? (y/N):\n");
+        char answer;
+        if (scanf("%c", &answer) != 1) {
+            clearInputBuffer();
+            continue;
+        }
+        if (answer == 'N' || answer == 'n') {
+            exit(0);
+        }
+        if (answer == 'Y' || answer == 'y') {
+            clearInputBuffer();
+            break;
+        }
+    }
+}
+
 void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
     auto pGameState = (GameState *) malloc(sizeof(GameState));
     pGameState->roundData = malloc(rounds * sizeof(RoundData));
@@ -163,6 +188,7 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
         runRound(&(pGameState->roundData[r]));
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
         printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
+        askForNextRound();
         pGameState->roundNum++;
     }
 
