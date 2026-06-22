@@ -5,5 +5,5 @@
 int main(void) {
     srand(time(nullptr));
 
-    play(EASY, 255, 1.0f);
+    play(0, 255, 1.0f);
 }

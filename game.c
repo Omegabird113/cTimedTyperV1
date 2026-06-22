@@ -10,11 +10,6 @@
 
 #include "ldistance.h"
 
-void clearInputBuffer(void) {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
-}
-
 int getRandomIntInclusive(const int min, const int max) {
     return (rand() % (max - min + 1)) + min;
 }
@@ -57,7 +52,6 @@ RoundData *runRound(RoundData *pRData) {
     printf("Round #%d:\nEnter the following within %ld seconds:\n%s\n", pRData->roundNum, pRData->timeLimit,
            pRData->prompt);
     if (fgets(pRData->input, sizeof(pRData->input), stdin) == NULL) {
-        clearInputBuffer();
         return pRData;
     }
     pRData->input[strcspn(pRData->input, "\n")] = '\0';
@@ -65,7 +59,6 @@ RoundData *runRound(RoundData *pRData) {
     pRData->timeTaken = end - start;
     pRData->roundScore = getRoundScore(pRData->timeLimit, pRData->timeTaken, pRData->prompt, pRData->input,
                                        pRData->difficulty);
-    clearInputBuffer();
     return pRData;
 }
 
@@ -156,20 +149,30 @@ void askForNextRound(const bool start) {
         } else {
             printf("Do you want to play another round? (y/N):\n");
         }
-        char answer;
-        scanf("%c", &answer); // don't check if success bc buffer gets cleared & loop continues anyways
-        if ((answer == 'N' || answer == 'n') && !start) {
-            exit(0);
+        char buffer[4];
+        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+            const char answer = buffer[0];
+            if ((answer == 'N' || answer == 'n') && !start) {
+                exit(0);
+            }
+            if (answer == 'Y' || answer == 'y') {
+                break;
+            }
         }
-        if (answer == 'Y' || answer == 'y') {
-            clearInputBuffer();
-            break;
-        }
-        clearInputBuffer();
     }
 }
 
-void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
+Difficulty genDifficulty(const uint64_t totalScore) {
+    if (totalScore > 2450) {
+        return HARD;
+    }
+    if (totalScore > 520) {
+        return MEDIUM;
+    }
+    return EASY;
+}
+
+void play(const uint64_t startScore, const uint16_t rounds, const float scoreMultiplier) {
     auto pGameState = (GameState *) malloc(sizeof(GameState));
     pGameState->roundData = malloc(rounds * sizeof(RoundData));
 
@@ -179,16 +182,16 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
     }
 
     pGameState->roundNum = 1;
-    pGameState->totalScore = 0;
+    pGameState->totalScore = startScore;
     pGameState->scoreMultiplier = scoreMultiplier;
-    pGameState->currentDifficulty = difficulty;
 
     askForNextRound(true);
 
     for (uint16_t r = 0; r < rounds; r++) {
         const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
+        pGameState->currentDifficulty = genDifficulty(pGameState->totalScore);
         // printf("promptLength: '%hhu'\n", promptLength);
-        pGameState->roundData[r] = genRoundData(r + 1, difficulty, promptLength);
+        pGameState->roundData[r] = genRoundData(r + 1, pGameState->currentDifficulty, promptLength);
         runRound(&(pGameState->roundData[r]));
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
         printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
