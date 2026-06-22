@@ -149,21 +149,23 @@ RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, con
     return roundData;
 }
 
-void askForNextRound(void) {
+void askForNextRound(const bool start) {
     while (true) {
-        printf("Do you want to play another round? (y/N):\n");
-        char answer;
-        if (scanf("%c", &answer) != 1) {
-            clearInputBuffer();
-            continue;
+        if (start) {
+            printf("Are you ready to play?: (y/N)\n");
+        } else {
+            printf("Do you want to play another round? (y/N):\n");
         }
-        if (answer == 'N' || answer == 'n') {
+        char answer;
+        scanf("%c", &answer); // don't check if success bc buffer gets cleared & loop continues anyways
+        if ((answer == 'N' || answer == 'n') && !start) {
             exit(0);
         }
         if (answer == 'Y' || answer == 'y') {
             clearInputBuffer();
             break;
         }
+        clearInputBuffer();
     }
 }
 
@@ -181,6 +183,8 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
     pGameState->scoreMultiplier = scoreMultiplier;
     pGameState->currentDifficulty = difficulty;
 
+    askForNextRound(true);
+
     for (uint16_t r = 0; r < rounds; r++) {
         const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
         // printf("promptLength: '%hhu'\n", promptLength);
@@ -188,7 +192,7 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
         runRound(&(pGameState->roundData[r]));
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
         printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
-        askForNextRound();
+        askForNextRound(false);
         pGameState->roundNum++;
     }
 
