@@ -5,6 +5,45 @@
 #include <tgmath.h>
 #include "words.h"
 #include "game.h"
+#include "ldistance.h"
+
+int getRandomIntInclusive(const int min, const int max) {
+    return (rand() % (max - min + 1)) + min;
+}
+
+double logBase(const double b, const double y) {
+    return log(y) / log(b);
+}
+
+uint16_t getWordCount(const char *s) {
+    uint16_t count = 0;
+    bool inWord = false;
+
+    while (*s) {
+        if (*s == ' ') {
+            inWord = false;
+        } else if (!inWord) {
+            inWord = true;
+            count++;
+        }
+        s++;
+    }
+
+    return count;
+}
+
+
+
+uint16_t getRoundScore(const time_t limit, const time_t taken, const char* prompt, const char* input, const Difficulty difficulty) {
+    const double timeRelative = (double) taken / (double) limit;
+    const double accuracy = getAccuracy(prompt, input);
+
+    const double baseScore = difficulty * accuracy * pow(getWordCount(prompt), 1.5) * (1 / timeRelative);
+    const double randomFactor = getRandomIntInclusive(12500, 7500) / 10000.0;
+    const double finalScore = baseScore * randomFactor;
+
+    return ceil(finalScore);
+}
 
 RoundData* runRound(RoundData* pRData) {
     const time_t start = time(nullptr);
@@ -15,11 +54,8 @@ RoundData* runRound(RoundData* pRData) {
     pRData->input[strcspn(pRData->input, "\n")] = '\0';
     const time_t end = time(nullptr);
     pRData->timeTaken = end - start;
+    pRData->roundScore = getRoundScore(pRData->timeLimit, pRData->timeTaken, pRData->prompt, pRData->input, pRData->difficulty);
     return pRData;
-}
-
-int getRandomIntInclusive(const int min, const int max) {
-    return (rand() % (max - min + 1)) + min;
 }
 
 uint16_t getSafeWordLength(const uint8_t length, const Difficulty difficulty) {
@@ -83,6 +119,8 @@ void getRandomPrompt(char *buffer, const size_t bufferSize, uint8_t length, cons
 RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, const uint8_t promptLength) {
     RoundData roundData = {};
 
+    roundData.difficulty = difficulty;
+
     char prompt[768];
     getRandomPrompt(prompt, sizeof(prompt), promptLength, difficulty);
     // printf("DEBUG: '%s'\n", prompt);
@@ -95,18 +133,13 @@ RoundData genRoundData(const uint16_t roundNum, const Difficulty difficulty, con
     roundData.roundNum = roundNum;
 
     memset(roundData.input, 0, sizeof(roundData.input));
-
     roundData.timeTaken = (time_t) 0;
-    roundData.score = 0;
+    roundData.roundScore = 0;
     return roundData;
 }
 
-double logBase(const double b, const double y) {
-    return log(y) / log(b);
-}
-
 void play(const Difficulty difficulty, const uint16_t rounds, const float scoreMultiplier) {
-    GameState* pGameState = (GameState*)malloc(sizeof(GameState));
+    auto pGameState = (GameState*)malloc(sizeof(GameState));
     pGameState->roundData = malloc(rounds * sizeof(RoundData));
 
     if (!pGameState->roundData) {
@@ -117,13 +150,15 @@ void play(const Difficulty difficulty, const uint16_t rounds, const float scoreM
     pGameState->roundNum = 1;
     pGameState->totalScore = 0;
     pGameState->scoreMultiplier = scoreMultiplier;
-    pGameState->difficulty = difficulty;
+    pGameState->currentDifficulty = difficulty;
 
     for (uint16_t r = 0; r < rounds; r++) {
         const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
         // printf("promptLength: '%hhu'\n", promptLength);
         pGameState->roundData[r] = genRoundData(r + 1, difficulty, promptLength);
         runRound(&(pGameState->roundData[r]));
+        pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
+        printf("You're total score is now %llu!\n", pGameState->totalScore);
         pGameState->roundNum++;
     }
 

@@ -12,11 +12,12 @@ typedef enum Difficulty {
 
 typedef struct RoundData {
     uint8_t roundNum;
+    Difficulty difficulty;
     time_t timeLimit;
     char prompt[768];
     time_t timeTaken;
     char input[778];
-    uint32_t score;
+    uint16_t roundScore;
 } RoundData;
 
 typedef struct GameState {
@@ -24,7 +25,7 @@ typedef struct GameState {
     RoundData* roundData;
     uint64_t totalScore;
     float scoreMultiplier;
-    Difficulty difficulty;
+    Difficulty currentDifficulty;
 } GameState;
 
 RoundData* runRound(RoundData* pRData);

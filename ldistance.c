@@ -44,7 +44,7 @@ uint16_t getLevenshteinDistance(const char *s1, const char *s2) {
     return table[len1][len2];
 }
 
-double accuracy(const char *prompt, const char *input) {
+double getAccuracy(const char *prompt, const char *input) {
     const uint16_t distance = getLevenshteinDistance(prompt, input);
     const uint16_t inputLen = strlen(input);
     const uint16_t maxLen = (strlen(prompt) > inputLen) ? strlen(prompt) : inputLen;
