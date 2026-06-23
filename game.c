@@ -121,7 +121,7 @@ void getRandomPrompt(char *buffer, const uint16_t buffSize, uint8_t length, cons
     }
 }
 
-RoundData genRoundData(uint16_t buffSize, char *promptBuffer, char *inputBuffer, const uint16_t roundNum,
+RoundData genRoundData(const uint16_t buffSize, char *promptBuffer, char *inputBuffer, const uint16_t roundNum,
                        const Difficulty difficulty, const uint8_t promptLength) {
     RoundData roundData = {};
 
