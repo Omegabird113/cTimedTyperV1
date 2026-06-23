@@ -121,7 +121,8 @@ void getRandomPrompt(char *buffer, const uint16_t buffSize, uint8_t length, cons
     }
 }
 
-RoundData genRoundData(uint16_t buffSize, char* promptBuffer, char* inputBuffer, const uint16_t roundNum, const Difficulty difficulty, const uint8_t promptLength) {
+RoundData genRoundData(uint16_t buffSize, char *promptBuffer, char *inputBuffer, const uint16_t roundNum,
+                       const Difficulty difficulty, const uint8_t promptLength) {
     RoundData roundData = {};
 
     roundData.difficulty = difficulty;
@@ -174,7 +175,7 @@ Difficulty genDifficulty(const uint64_t totalScore) {
 }
 
 void play(const uint64_t startScore, const uint16_t rounds, const float scoreMultiplier) {
-    auto pGameState = (GameState *) malloc(sizeof(GameState));
+    GameState *pGameState = (GameState *) malloc(sizeof(GameState));
     pGameState->roundData = malloc(rounds * sizeof(RoundData));
 
     if (!pGameState->roundData) {
@@ -192,16 +193,22 @@ void play(const uint64_t startScore, const uint16_t rounds, const float scoreMul
         const uint8_t promptLength = ((uint8_t) logBase(2.079, (pGameState->totalScore) + 6.4) + 4);
         pGameState->currentDifficulty = genDifficulty(pGameState->totalScore);
         // printf("promptLength: '%hhu'\n", promptLength);
+
         constexpr uint16_t buffSize = 768;
-        auto *promptBuffer = (char*) malloc(buffSize);
-        auto *inputBuffer = (char*) malloc(buffSize);
-        pGameState->roundData[r] = genRoundData(buffSize, promptBuffer, inputBuffer, r + 1, pGameState->currentDifficulty, promptLength);
+        char *promptBuffer = malloc(buffSize);
+        char *inputBuffer = malloc(buffSize);
+
+        pGameState->roundData[r] = genRoundData(buffSize, promptBuffer, inputBuffer, r + 1,
+                                                pGameState->currentDifficulty, promptLength);
         pGameState->roundData[r].buffSize = buffSize;
         runRound(&(pGameState->roundData[r]));
+
         pGameState->totalScore += ceil(pGameState->roundData[r].roundScore * pGameState->scoreMultiplier);
         printf("You're total score is now %" PRIu64 "!\n", pGameState->totalScore);
+
         askForNextRound(false);
         pGameState->roundNum++;
+
         free(promptBuffer);
         free(inputBuffer);
         pGameState->roundData[r].prompt = nullptr;
