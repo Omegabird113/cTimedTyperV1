@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "5:00"
+      timezone: "America/New_York"
+    assignees:
+      - Omegabird113
+    labels:
+      - dependencies
+    cooldown:
+      default-days: 2
