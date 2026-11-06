@@ -33,7 +33,7 @@ jobs:
           -C build cTimedTyperV1
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: linux-x64
         path: cTimedTyperV1-linux-x64.tar.gz
@@ -68,7 +68,7 @@ jobs:
           -C build cTimedTyperV1
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: macos-universal
         path: cTimedTyperV1-macos-universal.tar.gz
@@ -102,7 +102,7 @@ jobs:
           -DestinationPath cTimedTyperV1-windows-x64.zip
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: windows-x64
         path: cTimedTyperV1-windows-x64.zip
