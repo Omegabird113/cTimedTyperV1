@@ -123,7 +123,7 @@ jobs:
       uses: actions/download-artifact@v8
 
     - name: Create Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: |
           linux-x64/cTimedTyperV1-linux-x64.tar.gz
